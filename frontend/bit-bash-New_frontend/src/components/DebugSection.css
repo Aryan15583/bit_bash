@@ -1,0 +1,373 @@
+/* ============================================================
+   Debug workbench (Round 1, step 2 of solving)
+   Buttons and modals get their look from pages/question.css.
+   ============================================================ */
+
+.debug-workbench {
+  --line-h: 24px;
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* fade only: a transform here would trap the fixed-position modals inside */
+  animation: bb-fade 0.5s var(--ease-out) backwards;
+}
+
+.debug-intro {
+  margin-bottom: 2px;
+}
+
+.debug-heading {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.debug-sub {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* ---------- Editor ---------- */
+.debug-workbench .code-editor-wrapper {
+  background: var(--panel-sunken);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.debug-workbench .code-editor-wrapper:focus-within {
+  border-color: rgba(139, 92, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(139, 92, 255, 0.15);
+}
+
+.debug-workbench .code-editor-header {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  height: 38px;
+  padding-right: 14px;
+  background: var(--panel-raised);
+  border-bottom: 1px solid var(--line);
+}
+
+.editor-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: var(--panel-sunken);
+  border-right: 1px solid var(--line);
+  box-shadow: inset 0 2px 0 var(--accent-pink);
+}
+
+.editor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-pink);
+}
+
+.debug-workbench .editor-title {
+  font-family: var(--font-code);
+  font-size: 13px;
+  color: var(--text-primary);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.editor-hint {
+  align-self: center;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.code-editor-body {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+}
+
+.code-gutter {
+  height: 440px;
+  overflow: hidden;
+  padding: 14px 0;
+  text-align: right;
+  background: rgba(0, 0, 0, 0.18);
+  border-right: 1px solid var(--line);
+  user-select: none;
+}
+
+.code-gutter span {
+  display: block;
+  height: var(--line-h);
+  padding-right: 12px;
+  font-family: var(--font-code);
+  font-size: 12.5px;
+  line-height: var(--line-h);
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.debug-workbench .code-editor {
+  display: block;
+  width: 100%;
+  height: 440px;
+  margin: 0;
+  padding: 14px 16px;
+  font-family: var(--font-code);
+  font-size: 14.5px;
+  line-height: var(--line-h);
+  tab-size: 4;
+  color: #e9e3ff;
+  caret-color: var(--accent-pink);
+  background: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+  white-space: pre;
+  overflow: auto;
+}
+
+.debug-workbench .code-editor::selection {
+  background: rgba(139, 92, 255, 0.4);
+}
+
+/* ---------- Run + progress ---------- */
+.debug-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.game-screen .debug-workbench .check-btn {
+  flex-shrink: 0;
+  min-width: 170px;
+}
+
+/* moving stripes while the checker runs */
+.game-screen .debug-workbench .check-btn.is-loading {
+  color: var(--text-primary);
+  background:
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.08) 0 10px, transparent 10px 20px),
+    var(--panel-raised);
+  background-size: 28px 28px, auto;
+  animation: stripes 0.6s linear infinite;
+}
+
+@keyframes stripes {
+  to { background-position: 28px 0, 0 0; }
+}
+
+.debug-workbench .progress-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.debug-workbench .progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.debug-workbench .progress-percentage {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.debug-workbench .progress-bar-bg {
+  height: 8px;
+  background: var(--panel-raised);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.debug-workbench .progress-bar-fill {
+  height: 100%;
+  background: var(--grad-neon);
+  border-radius: 8px;
+  transition: width 0.8s var(--ease-out);
+}
+
+.debug-workbench .progress-bar-fill.full {
+  background: var(--success-green);
+}
+
+/* ---------- Result message ---------- */
+.debug-workbench .result-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  border-radius: 4px;
+  border: 1px solid;
+  animation: bb-rise 0.35s var(--ease-out) both;
+}
+
+.debug-workbench .result-box.success {
+  color: var(--success-green);
+  background: rgba(62, 240, 176, 0.08);
+  border-color: rgba(62, 240, 176, 0.4);
+}
+
+.debug-workbench .result-box.error {
+  color: #ffc2cd;
+  background: rgba(255, 84, 112, 0.08);
+  border-color: rgba(255, 84, 112, 0.4);
+  animation: bb-rise 0.35s var(--ease-out) both, bb-shake 0.45s ease-out 0.1s;
+}
+
+.result-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bg-main);
+  border-radius: 50%;
+  background: currentColor;
+}
+.result-box.success .result-icon { background: var(--success-green); }
+.result-box.error .result-icon   { background: var(--danger); color: #fff; }
+
+/* ---------- Submit / give up ---------- */
+.debug-workbench .debug-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.debug-note {
+  font-size: 14px;
+  color: var(--text-faint);
+}
+
+/* "Submit fix" lights up when the code is fixed */
+.game-screen .debug-workbench .debug-btn.success:not(:disabled) {
+  color: var(--bg-main);
+  background: var(--success-green);
+  animation: submitReady 1.6s ease-in-out infinite;
+}
+
+@keyframes submitReady {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.18); }
+}
+
+/* small tag when the fix was checked in the browser (network cut) */
+.result-offline {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  align-self: center;
+}
+
+/* ---------- Grace marks: bug meter ---------- */
+.debug-workbench .bug-meter {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.debug-workbench .bug-meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.debug-workbench .bug-meter-label b {
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.debug-workbench .bug-meter-marks {
+  font-variant-numeric: tabular-nums;
+}
+
+.debug-workbench .bug-meter-marks b {
+  display: inline-block;
+  font-size: 20px;
+  color: var(--success-green);
+  animation: marksBump 0.5s var(--ease-spring);
+}
+
+@keyframes marksBump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* "+25" floating up when a bug gets fixed */
+.debug-workbench .bug-meter-pop {
+  position: absolute;
+  right: 0;
+  top: -6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--success-green);
+  pointer-events: none;
+  animation: gracePop 1.4s var(--ease-out) forwards;
+}
+
+@keyframes gracePop {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.8); }
+  20%  { opacity: 1; transform: translateY(-4px) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-34px) scale(1); }
+}
+
+.debug-workbench .bug-meter-track {
+  display: flex;
+  gap: 4px;
+}
+
+.debug-workbench .bug-seg {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  height: 26px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.35s, color 0.35s, border-color 0.35s;
+}
+
+.debug-workbench .bug-seg.on {
+  color: var(--bg-main);
+  background: var(--success-green);
+  border-color: var(--success-green);
+  animation: segOn 0.5s var(--ease-spring);
+}
+
+@keyframes segOn {
+  0%   { transform: scaleY(0.6); filter: brightness(1.6); }
+  100% { transform: scaleY(1); filter: brightness(1); }
+}
+
+.debug-workbench .bug-meter-note {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-faint);
+}

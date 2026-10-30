@@ -1,0 +1,141 @@
+/* ============================================================
+   Maze board (Round 2). Blue-led, matches LogicMaze.css.
+   ============================================================ */
+
+.maze-board {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "canvas canvas"
+    "status controls";
+  align-items: center;
+  gap: 14px 20px;
+}
+
+.maze-board-canvas {
+  grid-area: canvas;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background: var(--r2-panel-sunken);
+  border: 1px solid var(--r2-line);
+  border-radius: 4px;
+}
+
+/* sized so the whole maze fits on screen with the controls */
+.maze-board-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* leaves room for the card heading, controls and the A-D options row */
+  max-height: calc(100vh - 64px - 360px);
+  min-height: 260px;
+}
+
+/* exits breathe gently so they're easy to spot */
+.maze-board-exit {
+  animation: exitPulse 2.4s ease-in-out infinite;
+}
+.maze-board-exit-b { animation-delay: 0.3s; }
+.maze-board-exit-c { animation-delay: 0.6s; }
+.maze-board-exit-d { animation-delay: 0.9s; }
+
+@keyframes exitPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.72; }
+}
+
+/* ---------- Status line ---------- */
+.maze-board-status {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  background: var(--r2-panel-sunken);
+  border: 1px solid var(--r2-line);
+  border-left: 3px solid var(--r2-blue);
+  border-radius: 3px;
+}
+
+.maze-board-status-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--r2-blue);
+  box-shadow: 0 0 10px var(--r2-blue);
+  animation: dotGlow 1.6s ease-in-out infinite;
+}
+
+@keyframes dotGlow {
+  50% { opacity: 0.4; }
+}
+
+/* ---------- On-screen arrows ---------- */
+.maze-board-controls {
+  grid-area: controls;
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  grid-template-rows: 40px 40px auto;
+  gap: 4px;
+  justify-items: center;
+}
+
+.maze-board-controls > button {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.maze-board-controls-row {
+  grid-column: 1 / span 3;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  gap: 4px;
+}
+
+.maze-board-controls button {
+  width: 40px;
+  height: 40px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--r2-panel-raised);
+  border: 1px solid var(--r2-line);
+  border-radius: 4px;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.maze-board-controls button:hover:not(:disabled) {
+  border-color: var(--r2-blue);
+  background: #1d2c52;
+}
+
+.maze-board-controls button:active:not(:disabled) {
+  transform: scale(0.94);
+  background: var(--r2-blue);
+  color: #031327;
+}
+
+.maze-board-controls button:disabled {
+  opacity: 0.4;
+}
+
+.maze-board-controls p {
+  grid-column: 1 / span 3;
+  grid-row: 3;
+  margin: 2px 0 0;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--text-faint);
+}
+
+.maze-board-error {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+}

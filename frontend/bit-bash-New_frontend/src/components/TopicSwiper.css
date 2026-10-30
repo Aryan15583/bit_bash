@@ -1,0 +1,254 @@
+/* ============================================================
+   Topic slot machine (Round 1, first step)
+   Geometry is tied to TopicSwiper.jsx: each card is 200px wide
+   including margins, and the track starts 200px in so card 0
+   sits under the pointer. Keep those numbers in sync.
+   ============================================================ */
+
+.swiper-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  animation: bb-rise 0.6s var(--ease-out) 0.25s both;
+}
+
+.swiper-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swiper-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Machine body ---------- */
+.swiper-machine {
+  position: relative;
+  width: 640px;
+  padding: 18px 20px 16px;
+  background: var(--hud-corners), var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Status lights ---------- */
+.machine-lights {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.light {
+  width: 18px;
+  height: 4px;
+  background: var(--line-strong);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.swiper-machine.is-spinning .light {
+  animation: lightChase 0.75s linear infinite;
+}
+.swiper-machine.is-spinning .light-2 { animation-delay: 0.15s; }
+.swiper-machine.is-spinning .light-3 { animation-delay: 0.3s; }
+.swiper-machine.is-spinning .light-4 { animation-delay: 0.45s; }
+.swiper-machine.is-spinning .light-5 { animation-delay: 0.6s; }
+
+@keyframes lightChase {
+  0%, 100% { background: var(--line-strong); box-shadow: none; }
+  20%      { background: var(--accent-pink); box-shadow: 0 0 10px var(--accent-pink); }
+}
+
+.swiper-machine.is-locked .light {
+  background: var(--accent-pink);
+  box-shadow: 0 0 10px rgba(255, 79, 176, 0.8);
+}
+
+/* ---------- Pointer + centre line ---------- */
+.pointer-wrapper {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  height: 12px;
+}
+
+.pointer {
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 12px solid var(--accent-pink);
+  filter: drop-shadow(0 0 6px rgba(255, 79, 176, 0.7));
+}
+
+/* vertical line marking the winning slot */
+.pointer-glow {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 2px;
+  height: 156px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, var(--accent-pink), rgba(255, 79, 176, 0.1));
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ---------- Window ---------- */
+.swiper-window {
+  position: relative;
+  width: 600px;           /* content width; the border is an inset shadow */
+  padding: 18px 0;
+  overflow: hidden;
+  background: var(--panel-sunken);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 1px var(--line-strong),
+    inset 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.swiper-machine.is-locked .swiper-window {
+  animation: windowLock 0.9s ease-out;
+}
+
+@keyframes windowLock {
+  0% {
+    box-shadow:
+      inset 0 0 0 1px var(--accent-pink),
+      inset 0 12px 30px rgba(0, 0, 0, 0.5),
+      0 0 0 0 rgba(255, 79, 176, 0.7);
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0 1px var(--line-strong),
+      inset 0 12px 30px rgba(0, 0, 0, 0.5),
+      0 0 0 18px rgba(255, 79, 176, 0);
+  }
+}
+
+.window-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 150px;
+  z-index: 3;
+  pointer-events: none;
+}
+.window-overlay.left {
+  left: 0;
+  background: linear-gradient(90deg, var(--panel-sunken) 10%, transparent);
+}
+.window-overlay.right {
+  right: 0;
+  background: linear-gradient(270deg, var(--panel-sunken) 10%, transparent);
+}
+
+.swiper-track {
+  display: flex;
+  padding-left: 200px;
+  will-change: transform;
+}
+
+/* ---------- Cards ---------- */
+.topic-card {
+  flex-shrink: 0;
+  width: 180px;
+  height: 120px;
+  margin: 0 10px;
+}
+
+.card-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  transition: filter 0.3s, background 0.3s, border-color 0.3s, transform 0.3s;
+}
+
+/* motion blur while the reel is moving */
+.swiper-machine.is-spinning .card-inner {
+  filter: blur(1.4px) brightness(0.85);
+}
+
+.card-icon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.card-text {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.topic-card.selected .card-inner {
+  background: rgba(255, 79, 176, 0.12);
+  border-color: var(--accent-pink);
+  transform: scale(1.05);
+}
+.topic-card.selected .card-icon {
+  animation: bb-pop 0.45s var(--ease-spring);
+}
+
+/* ---------- Status readout ---------- */
+.machine-panel {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.panel-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.panel-display::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-purple);
+}
+
+.swiper-machine.is-spinning .panel-display { color: var(--warning-orange); }
+.swiper-machine.is-spinning .panel-display::before {
+  background: var(--warning-orange);
+  animation: dotBlink 0.5s steps(2) infinite;
+}
+
+.swiper-machine.is-locked .panel-display { color: var(--accent-pink); }
+.swiper-machine.is-locked .panel-display::before { background: var(--accent-pink); }
+
+@keyframes dotBlink {
+  50% { opacity: 0.2; }
+}
+
+/* ---------- Spin button (base look comes from question.css) ---------- */
+.game-screen .spin-btn {
+  height: 56px;
+  padding: 0 46px;
+  font-size: 18px;
+}
+
+.spin-btn .btn-glow { display: none; }

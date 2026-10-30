@@ -1,0 +1,620 @@
+/* ============================================================
+   BIT BASH BONANZA - Round 1 game screen (all 6 question pages)
+   Everything is scoped under .game-screen / .locked-screen so it
+   can't leak onto other pages (Vite bundles all CSS together).
+   Colors and fonts come from styles/theme.css.
+   ============================================================ */
+
+/* ---------- Screen + background ---------- */
+.game-screen {
+  --rail: 300px;            /* scoreboard width */
+  --bar-h: 64px;            /* top bar height  */
+  min-height: 100vh;
+  padding: calc(var(--bar-h) + 40px) 40px 48px;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(139, 92, 255, 0.10), transparent 60%),
+    var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  position: relative;
+  /* clip (not hidden) so sticky panels like Expected output keep working */
+  overflow-x: clip;
+}
+
+/* While solving, leave room for the scoreboard rail on the right */
+.game-screen[data-phase="assembly"],
+.game-screen[data-phase="debug"] {
+  padding-right: calc(var(--rail) + 48px);
+  padding-top: calc(var(--bar-h) + 28px);
+}
+
+.game-screen .bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(139, 92, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 80%);
+  animation: bb-grid-drift 18s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* faint CRT scanlines over everything */
+.game-screen::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.018) 0 1px,
+    transparent 1px 3px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.game-screen .bg-glow {
+  position: fixed;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+}
+.game-screen .bg-glow-1 { top: -220px; left: -200px; background: var(--primary-purple); }
+.game-screen .bg-glow-2 { bottom: -240px; right: -200px; background: var(--accent-pink); }
+
+.game-screen .game-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Top bar ---------- */
+.game-screen .top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--bar-h);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 24px;
+  background: rgba(13, 10, 26, 0.82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+/* thin pink-to-violet line under the bar */
+.game-screen .top-bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent-pink), var(--primary-purple) 40%, transparent 85%);
+  opacity: 0.8;
+}
+
+.game-screen .question-box {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 18px 0 14px;
+  background: var(--panel-raised);
+  clip-path: var(--chamfer);
+  --cut: 8px;
+  animation: bb-rise 0.5s var(--ease-out) both;
+}
+
+.game-screen .q-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent-pink);
+  margin-right: 1px;
+}
+
+.game-screen .q-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.game-screen .q-topic {
+  margin-left: 14px;
+  padding-left: 14px;
+  border-left: 1px solid var(--line-strong);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: bb-rise 0.4s var(--ease-out) both;
+}
+
+/* ---------- Wordmark (shown before solving starts) ---------- */
+.game-screen .title-container {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  margin: 8px 0 40px;
+}
+
+.game-screen[data-phase="assembly"] .title-container,
+.game-screen[data-phase="debug"] .title-container {
+  display: none;
+}
+
+.game-screen .game-title {
+  display: flex;
+  justify-content: center;
+  gap: 0.32em;
+  margin: 0;
+  font-size: clamp(44px, 5.2vw, 76px);
+  line-height: 1;
+}
+
+.game-screen .title-word {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  animation:
+    bb-rise 0.7s var(--ease-out) both,
+    bb-glitch 7s steps(1) 1.2s infinite;
+}
+.game-screen .title-word:nth-child(2) { animation-delay: 0.08s, 1.5s; }
+.game-screen .title-word:nth-child(3) { animation-delay: 0.16s, 1.8s; }
+
+.game-screen .title-underline {
+  width: 140px;
+  height: 4px;
+  margin: 20px auto 0;
+  background: var(--grad-neon);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  transform-origin: left;
+  animation: underlineGrow 0.9s var(--ease-out) 0.3s both;
+}
+
+@keyframes underlineGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ---------- Player chip (centre of the top bar) ---------- */
+.game-screen .player-hud {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 16px 0 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 40px;
+  animation: hudIn 0.5s var(--ease-out) both;
+}
+
+@keyframes hudIn {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.game-screen .player-hud .avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  font-size: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--panel-raised);
+  box-shadow: none;
+  animation: none;
+  transform: none;
+}
+
+.game-screen .player-hud .username {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Q3: tell the player this is the last one */
+.game-screen .player-hud.final-round {
+  border-color: rgba(255, 79, 176, 0.5);
+}
+.game-screen .player-hud.final-round::after {
+  content: "Final question";
+  margin-left: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-pink);
+  background: rgba(255, 79, 176, 0.12);
+  border-radius: 20px;
+}
+
+/* ============================================================
+   Buttons: one recipe for every action in Round 1
+   ============================================================ */
+.game-screen :is(.spin-btn, .reveal-btn, .check-btn, .restart-btn,
+                 .next-question-btn, .debug-btn) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 50px;
+  padding: 0 30px;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: #23071a;
+  background: var(--accent-pink);
+  border: 0;
+  border-radius: 0;
+  clip-path: var(--chamfer);
+  box-shadow: none;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out), filter 0.2s, background 0.2s;
+}
+
+/* light sweep on hover */
+.game-screen :is(.spin-btn, .reveal-btn, .check-btn, .restart-btn,
+                 .next-question-btn, .debug-btn)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: translateX(-120%) skewX(-20deg);
+  pointer-events: none;
+}
+
+.game-screen :is(.spin-btn, .reveal-btn, .check-btn, .restart-btn,
+                 .next-question-btn, .debug-btn):hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+.game-screen :is(.spin-btn, .reveal-btn, .check-btn, .restart-btn,
+                 .next-question-btn, .debug-btn):hover:not(:disabled)::after {
+  animation: bb-sweep 0.7s var(--ease-out);
+}
+.game-screen :is(.spin-btn, .reveal-btn, .check-btn, .restart-btn,
+                 .next-question-btn, .debug-btn):active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.game-screen :is(.spin-btn, .reveal-btn, .check-btn, .restart-btn,
+                 .next-question-btn, .debug-btn):disabled,
+.game-screen .debug-btn.disabled {
+  color: var(--text-faint);
+  background: var(--panel-raised);
+  filter: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* Secondary: quieter violet button */
+.game-screen .debug-btn.fail {
+  color: var(--text-primary);
+  background: var(--panel-raised);
+}
+.game-screen .debug-btn.fail:hover:not(:disabled) {
+  background: #2c2350;
+}
+
+/* Destructive */
+.game-screen .restart-btn.danger {
+  color: #fff;
+  background: var(--danger);
+}
+
+/* ============================================================
+   "Code assembled" banner (slides up from the bottom)
+   ============================================================ */
+.game-screen .debug-card {
+  position: fixed;
+  z-index: 70;
+  left: 40px;
+  right: calc(var(--rail) + 48px);
+  bottom: 28px;
+  margin: 0 auto;
+  max-width: 640px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 18px;
+  padding: 18px 20px;
+  text-align: left;
+  background: var(--hud-corners), var(--panel-raised);
+  border: 1px solid rgba(62, 240, 176, 0.45);
+  border-radius: 4px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  animation:
+    bannerUp 0.55s var(--ease-spring) both,
+    bannerFlash 0.9s ease-out 0.3s;
+}
+
+@keyframes bannerUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes bannerFlash {
+  0%   { box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 0 rgba(62, 240, 176, 0.55); }
+  100% { box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 16px rgba(62, 240, 176, 0); }
+}
+
+.game-screen .debug-card .debug-icon {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  font-size: 26px;
+  margin: 0;
+  background: rgba(62, 240, 176, 0.12);
+  border-radius: 50%;
+  animation: bb-pop 0.5s var(--ease-spring) 0.2s both;
+}
+
+.game-screen .debug-card .debug-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--success-green);
+  text-shadow: none;
+}
+
+.game-screen .debug-card .debug-text {
+  grid-column: 2;
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.game-screen .debug-card .debug-actions {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
+/* ============================================================
+   Modals (time up / fixed it / give up)
+   ============================================================ */
+.game-screen .game-over-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(8, 6, 15, 0.78);
+  backdrop-filter: blur(10px);
+  animation: overlayIn 0.25s ease-out both;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.game-screen .game-over-modal {
+  --tone: var(--danger);
+  position: relative;
+  width: min(480px, 100%);
+  padding: 40px 40px 36px;
+  text-align: center;
+  background: var(--hud-corners), var(--panel);
+  border: 1px solid var(--line-strong);
+  border-top: 3px solid var(--tone);
+  border-radius: 4px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  animation: bb-pop 0.4s var(--ease-spring) both;
+}
+.game-screen .game-over-modal.success { --tone: var(--success-green); }
+.game-screen .game-over-modal.warning { --tone: var(--warning-orange); }
+
+.game-screen .modal-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(420px 180px at 50% 0%, color-mix(in srgb, var(--tone) 22%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.game-screen .modal-content {
+  position: relative;
+  z-index: 2;
+}
+
+.game-screen .game-over-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 18px;
+  font-size: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  animation: bb-pop 0.5s var(--ease-spring) 0.1s both;
+}
+.game-screen .game-over-modal:not(.success):not(.warning) .game-over-icon {
+  animation: bb-pop 0.5s var(--ease-spring) 0.1s both, bb-shake 0.5s ease-out 0.55s;
+}
+
+.game-screen .game-over-title {
+  margin: 0 0 10px;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-shadow: none;
+}
+
+.game-screen .game-over-modal p,
+.game-screen .game-over-text {
+  margin: 0 auto 26px;
+  max-width: 36ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  opacity: 1 !important;
+}
+
+.game-screen .final-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0 auto 28px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.game-screen .final-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.game-screen .final-value {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.game-screen .modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* confetti inside the "fixed it" modal */
+.game-screen .game-over-modal .confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.game-screen .game-over-modal .confetti span {
+  position: absolute;
+  top: -12px;
+  width: 7px;
+  height: 12px;
+  background: var(--accent-pink);
+  animation: confettiDrop 2.6s linear infinite;
+}
+.game-screen .game-over-modal .confetti span:nth-child(3n) { background: var(--primary-purple); }
+.game-screen .game-over-modal .confetti span:nth-child(3n + 1) { background: var(--success-green); width: 5px; }
+
+@keyframes confettiDrop {
+  0%   { transform: translateY(0) rotate(0); opacity: 1; }
+  100% { transform: translateY(560px) rotate(540deg); opacity: 0; }
+}
+
+/* ============================================================
+   "Question already completed" screen
+   ============================================================ */
+.locked-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+  text-align: center;
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(900px 500px at 50% 0%, rgba(139, 92, 255, 0.14), transparent 65%),
+    var(--bg-main);
+}
+
+.locked-screen h2 {
+  margin: 0;
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 700;
+  color: var(--text-primary);
+  animation: bb-rise 0.6s var(--ease-out) both;
+}
+
+.locked-screen h2::before {
+  content: "✓";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  font-size: 32px;
+  line-height: 64px;
+  color: var(--success-green);
+  background: rgba(62, 240, 176, 0.12);
+  border-radius: 50%;
+  animation: bb-pop 0.5s var(--ease-spring) 0.15s both;
+}
+
+.locked-screen p {
+  margin: 0;
+  max-width: 44ch;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  animation: bb-rise 0.6s var(--ease-out) 0.15s both;
+}
+
+.locked-screen .next-question-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 50px;
+  margin-top: 8px;
+  padding: 0 30px;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 700;
+  color: #23071a;
+  background: var(--accent-pink);
+  clip-path: var(--chamfer);
+  transition: transform 0.15s var(--ease-out), filter 0.2s;
+  animation: bb-rise 0.6s var(--ease-out) 0.3s backwards;
+}
+.locked-screen .next-question-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+/* ---------- Narrow windows ---------- */
+@media (max-width: 1100px) {
+  .game-screen[data-phase="assembly"],
+  .game-screen[data-phase="debug"] {
+    padding-right: 40px;
+  }
+  .game-screen .debug-card { right: 40px; }
+  .game-screen .player-hud { display: none; }
+}

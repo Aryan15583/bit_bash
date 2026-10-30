@@ -1,0 +1,126 @@
+/* ============================================================
+   Round 1 countdown, sits on the right of the top bar.
+   States: .low (<2 min, amber), .critical (<1 min, red pulse),
+           .warning (<10 s, shakes), .time-up
+   ============================================================ */
+
+.flip-timer {
+  --tone: var(--text-primary);
+  --tile: var(--panel-raised);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 6px 0 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: var(--font-code);
+  transition: border-color 0.4s, background 0.4s;
+  animation: bb-rise 0.5s var(--ease-out) both;
+}
+
+.flip-timer-label {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.flip-timer-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-group {
+  display: flex;
+  gap: 3px;
+}
+
+.colon {
+  width: 8px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tone);
+  opacity: 0.6;
+  animation: colonBlink 1s steps(2) infinite;
+}
+
+@keyframes colonBlink {
+  50% { opacity: 0.15; }
+}
+
+/* one digit tile */
+.time-segment {
+  position: relative;
+  width: 24px;
+  height: 32px;
+  perspective: 200px;
+}
+
+.segment-display,
+.segment-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tone);
+  background: var(--tile);
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.4s, background 0.4s;
+}
+
+/* hairline across the middle of each tile, like a flip clock */
+.segment-display::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.segment-overlay {
+  opacity: 0;
+  backface-visibility: hidden;
+  transform-origin: center center;
+}
+
+.segment-overlay.flip {
+  animation: flip-down 0.45s var(--ease-out);
+}
+
+@keyframes flip-down {
+  0%   { opacity: 1; transform: rotateX(90deg); }
+  100% { opacity: 1; transform: rotateX(0deg); }
+}
+
+/* ---------- Urgency ---------- */
+.flip-timer.low {
+  --tone: var(--warning-orange);
+  border-color: rgba(255, 181, 71, 0.45);
+}
+
+.flip-timer.critical {
+  --tone: #ff8fa3;
+  --tile: rgba(255, 84, 112, 0.16);
+  border-color: rgba(255, 84, 112, 0.6);
+  animation: bb-pulse-red 1s ease-in-out infinite;
+}
+
+.flip-timer.warning .flip-timer-container {
+  animation: bb-shake 0.5s ease-in-out infinite;
+}
+
+.flip-timer.time-up {
+  --tone: var(--danger);
+  border-color: var(--danger);
+}

@@ -1,0 +1,241 @@
+/* ============================================================
+   Round 1 scoreboard: fixed rail on the right while solving.
+   Rendered on <body> through a portal, so it is scoped by .sb-panel.
+   Width matches --rail in pages/question.css (300px).
+   ============================================================ */
+
+.sb-panel {
+  position: fixed;
+  top: calc(64px + 28px);
+  right: 24px;
+  width: 300px;
+  z-index: 40;
+  padding: 20px;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+  background: var(--hud-corners), var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  animation: railIn 0.55s var(--ease-out) 0.1s both;
+}
+
+@keyframes railIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- Total ---------- */
+.sb-total-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sb-total-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.sb-total {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-total-num {
+  display: inline-block;
+  animation: totalBump 0.5s var(--ease-spring);
+}
+
+@keyframes totalBump {
+  0%   { transform: scale(1); color: var(--text-primary); }
+  35%  { transform: scale(1.12); color: var(--success-green); }
+  100% { transform: scale(1); color: var(--text-primary); }
+}
+
+.sb-total small {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.sb-bar {
+  height: 6px;
+  margin: 14px 0 16px;
+  background: var(--panel-raised);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sb-bar-fill {
+  height: 100%;
+  background: var(--grad-neon);
+  border-radius: 6px;
+  transition: width 0.9s var(--ease-out);
+}
+
+/* ---------- Q1 / Q2 / Q3 ---------- */
+.sb-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.sb-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text-faint);
+  background: var(--panel-sunken);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+
+.sb-chip b {
+  font-size: 17px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-chip.current {
+  color: var(--accent-pink);
+  border-color: rgba(255, 79, 176, 0.55);
+  background: rgba(255, 79, 176, 0.08);
+}
+.sb-chip.current b { color: var(--text-primary); }
+
+/* ---------- This question ---------- */
+.sb-qline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+
+.sb-qname {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.sb-topic {
+  font-style: normal;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-qscore {
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sb-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 15px;
+  color: var(--text-faint);
+  background: var(--panel-sunken);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-strong);
+  border-radius: 3px;
+  transition: all 0.3s;
+}
+
+.sb-step b {
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-step-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sb-step-pct {
+  font-style: normal;
+  font-size: 12px;
+  padding: 1px 6px;
+  color: var(--primary-glow);
+  background: rgba(139, 92, 255, 0.16);
+  border-radius: 3px;
+}
+
+/* the step you're on now */
+.sb-step.active {
+  color: var(--text-primary);
+  border-left-color: var(--accent-pink);
+}
+
+.sb-step.done {
+  color: var(--success-green);
+  border-color: rgba(62, 240, 176, 0.3);
+  border-left-color: var(--success-green);
+  background: rgba(62, 240, 176, 0.06);
+}
+
+.sb-step.done .sb-step-name::before {
+  content: "✓";
+  font-weight: 700;
+}
+
+.sb-hint {
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* ---------- "+50" float ---------- */
+.sb-pop {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--success-green);
+  pointer-events: none;
+  animation: popFloat 1.3s var(--ease-out) forwards;
+}
+
+@keyframes popFloat {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.8); }
+  20%  { opacity: 1; transform: translateY(0) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-34px) scale(1); }
+}
+
+@media (max-width: 1100px) {
+  .sb-panel { display: none; }
+}
+
+/* debug step with some grace marks banked */
+.sb-step.partial b {
+  color: var(--success-green);
+}

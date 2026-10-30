@@ -1,0 +1,358 @@
+/* ============================================================
+   Code assembler (Round 1, step 1 of solving)
+   Expected output on the left, draggable code lines on the right.
+   ============================================================ */
+
+.assembler {
+  max-width: 1080px;
+  margin: 0 auto;
+  /* fade only: any transform here would make the floating
+     Expected output box scroll with the page */
+  animation: bb-fade 0.5s var(--ease-out) backwards;
+}
+
+.assembler-loading {
+  padding: 60px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+/* ---------- Heading row ---------- */
+.assembler-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.assembler-title {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.assembler-sub {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.assembler-count {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.assembler-count b {
+  font-size: 18px;
+  color: var(--success-green);
+}
+
+/* ---------- Two columns ---------- */
+.assembler-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* shared window chrome */
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--panel-raised);
+  border-bottom: 1px solid var(--line);
+}
+
+.terminal-dots {
+  display: inline-flex;
+  gap: 5px;
+}
+.terminal-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+.terminal-dots i:first-child { background: var(--accent-pink); }
+.terminal-dots i:nth-child(2) { background: var(--primary-purple); }
+
+.terminal-lang {
+  margin-left: auto;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--primary-glow);
+  background: rgba(139, 92, 255, 0.14);
+  border-radius: 3px;
+}
+
+/* ---------- Expected output terminal ---------- */
+.expected-output-box {
+  position: sticky;
+  top: calc(64px + 20px);
+  overflow: hidden;
+  background: var(--panel-sunken);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  transition: border-color 0.4s;
+}
+
+.expected-output-box pre {
+  margin: 0;
+  padding: 16px;
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+  font-family: var(--font-code);
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--success-green);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* blinking cursor after the output */
+.expected-output-box pre::after {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--success-green);
+  animation: cursorBlink 1s steps(2) infinite;
+}
+
+@keyframes cursorBlink {
+  50% { opacity: 0; }
+}
+
+/* drag by the title bar */
+.drag-handle {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.drag-handle:active { cursor: grabbing; }
+
+.drag-grip {
+  margin-left: auto;
+  font-size: 13px;
+  letter-spacing: -2px;
+  color: var(--text-faint);
+}
+.drag-handle:hover .drag-grip { color: var(--accent-pink); }
+
+/* once dragged, it floats wherever it was dropped */
+.expected-output-box.moved {
+  position: fixed;
+  z-index: 80;
+  width: 300px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  border-color: var(--line-strong);
+}
+.expected-output-box.moved pre {
+  max-height: 50vh;
+}
+
+/* keep the code in its own column even when the box floats away */
+.code-window {
+  grid-column: 2;
+}
+
+.expected-output-box.solved {
+  border-color: rgba(62, 240, 176, 0.6);
+}
+
+/* "Output matched" overlay, shown once then fades */
+.celebration-overlay {
+  position: absolute;
+  inset: 36px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(17, 13, 34, 0.86);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  animation: celebrate 2.2s var(--ease-out) forwards;
+}
+
+.celebration-overlay.hidden {
+  display: none;
+}
+
+.celebration-overlay .clap {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--bg-main);
+  background: var(--success-green);
+  border-radius: 50%;
+  animation: bb-pop 0.5s var(--ease-spring) both;
+}
+
+.celebration-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--success-green);
+}
+
+@keyframes celebrate {
+  0%, 70% { opacity: 1; }
+  100%    { opacity: 0; }
+}
+
+/* ---------- Code window ---------- */
+.code-window {
+  background: var(--panel-sunken);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.code-list {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.code-block {
+  --accent: var(--line-strong);
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  min-height: 42px;
+  padding-right: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  cursor: grab;
+  user-select: none;
+  /* the entrance stays first in every animation list below so it
+     never replays when a state class is added or removed */
+  --enter: lineIn 0.4s var(--ease-out) calc(var(--i, 0) * 35ms) backwards;
+  animation: var(--enter);
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s var(--ease-out),
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+
+@keyframes lineIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.code-block:hover {
+  background: var(--panel-raised);
+  border-color: var(--line-strong);
+  border-left-color: var(--accent);
+  transform: translateX(3px);
+}
+
+.code-block:active { cursor: grabbing; }
+
+.line-no {
+  font-family: var(--font-code);
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.line-code {
+  font-family: var(--font-code);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre;
+  overflow-x: auto;
+  padding: 8px 0 8px calc(var(--indent, 0) * 1ch);
+  transition: padding-left 0.55s var(--ease-spring);
+  transition-delay: calc(var(--i, 0) * 40ms);
+}
+
+.grip {
+  font-size: 13px;
+  letter-spacing: -2px;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.code-block:hover .grip { opacity: 1; }
+
+/* In the right spot */
+.code-block.correct {
+  --accent: var(--success-green);
+  background: rgba(62, 240, 176, 0.07);
+  border-color: rgba(62, 240, 176, 0.28);
+  animation: var(--enter), lineCorrect 0.6s ease-out;
+}
+.code-block.correct .line-no { color: var(--success-green); }
+
+@keyframes lineCorrect {
+  0%   { box-shadow: 0 0 0 0 rgba(62, 240, 176, 0.45); }
+  100% { box-shadow: 0 0 0 8px rgba(62, 240, 176, 0); }
+}
+
+/* Being dragged */
+.code-block.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+  border-style: dashed;
+}
+
+/* Where it will land */
+.code-block.drag-over {
+  --accent: var(--accent-pink);
+  background: rgba(255, 79, 176, 0.1);
+  border-color: rgba(255, 79, 176, 0.5);
+  transform: translateX(6px);
+}
+
+/* Just landed */
+.code-block.just-dropped {
+  animation: var(--enter), lineDrop 0.45s var(--ease-spring);
+}
+.code-block.correct.just-dropped {
+  animation: var(--enter), lineCorrect 0.6s ease-out, lineDrop 0.45s var(--ease-spring);
+}
+
+@keyframes lineDrop {
+  0%   { transform: scale(1.03); background: rgba(255, 79, 176, 0.18); }
+  100% { transform: none; }
+}
+
+/* Solved: lines are locked, cursor goes back to normal */
+.assembler.is-done .code-block {
+  cursor: default;
+}
+.assembler.is-done .code-block:hover {
+  transform: none;
+  background: rgba(62, 240, 176, 0.07);
+}
