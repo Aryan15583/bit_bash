@@ -45,14 +45,15 @@ export default function LogicMaze() {
   const [timeLeft, setTimeLeft] = useState(ROUND_SECONDS);
   const [status, setStatus] = useState("playing");
   const [feedback, setFeedback] = useState(
-  "Predict the output, then click Next to enter the maze."
+  language === "c"
+    ? "Predict the output, then click Next to enter the maze."
+    : "Trace the code, then navigate to its correct output."
 );
   const [locked, setLocked] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [boardResetKey, setBoardResetKey] = useState(0);
-  // Rough work for the current question only
-  const [roughWork, setRoughWork] = useState("");
+
   const transitionRef = useRef(null);
   const questionStartedAtRef = useRef(Date.now());
 const questionResultsRef = useRef([]);
@@ -169,8 +170,6 @@ const resultsSavedRef = useRef(false);
       setAttempts((count) => count + 1);
 
       if (letter === question.correct) {
-        // Clear rough work immediately when the correct exit is reached
-setRoughWork("");
   const questionTime = Math.floor(
     (Date.now() - questionStartedAtRef.current) / 1000
   );
@@ -214,7 +213,8 @@ setView("question");
   setScore(0);
   setTimeLeft(ROUND_SECONDS);
   setStatus("playing");
-setFeedback("Predict the output, then click Next to enter the maze.");  setLocked(false);
+  setFeedback("Trace the code, then navigate to its correct output.");
+  setLocked(false);
   setAttempts(0);
   setBoardResetKey((key) => key + 1);
 };
@@ -368,7 +368,7 @@ setFeedback("Predict the output, then click Next to enter the maze.");  setLocke
             </div>
           </section>
         </div>
-        <div className="lm-side-column">
+
         {/* ---------- Right rail ---------- */}
         <aside className="lm-rail" aria-live="polite">
           <div className="lm-rail-label">Round 2 marks</div>
@@ -398,24 +398,6 @@ setFeedback("Predict the output, then click Next to enter the maze.");  setLocke
             <b>{attempts}</b>
           </div>
         </aside>
-          <section className="lm-scratchpad">
-    <div className="lm-scratchpad-head">
-      <div>
-        <h2>Rough Work</h2>
-        <p>Work out your answer here.</p>
-      </div>
-    </div>
-
-    <textarea
-      className="lm-scratchpad-input"
-      value={roughWork}
-      onChange={(e) => setRoughWork(e.target.value)}
-      placeholder="Write your calculations, variables, output..."
-      aria-label="Rough work for current question"
-      spellCheck={false}
-    />
-  </section>
-</div>
       </div>
 
       {/* ---------- Correct exit ---------- */}
@@ -445,7 +427,8 @@ setFeedback("Predict the output, then click Next to enter the maze.");  setLocke
                   questionStartedAtRef.current = Date.now();
                   setBoardResetKey((key) => key + 1);
                   setView("question");
-setFeedback("Predict the output, then click Next to enter the maze.");                  setLocked(false);
+                  setFeedback("Correct! The next challenge is ready. Trace the new code.");
+                  setLocked(false);
                 }
               }}
             >

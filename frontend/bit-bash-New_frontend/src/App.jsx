@@ -31,7 +31,6 @@ function App() {
 
         {/* Admin panel (passkey-gated server-side) */}
         <Route path="/admin" element={<Admin />} />
-        
 
         {/* Python routes */}
         <Route
