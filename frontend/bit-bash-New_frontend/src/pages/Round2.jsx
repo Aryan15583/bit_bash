@@ -1,7 +1,6 @@
 ﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './round2.css';
-import { clearRound2Order } from "../utils/shuffleRound2";
 
 const STEPS = [
   { title: "Read the code", text: "Each challenge shows a short program." },
@@ -13,9 +12,8 @@ const Round2 = () => {
   const navigate = useNavigate();
 
   const handleStart = () => {
-  clearRound2Order();
-  navigate("/logic-maze");
-};
+    navigate("/logic-maze");
+  };
 
   return (
     <div className="r2-intro">
